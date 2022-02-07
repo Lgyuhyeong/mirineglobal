@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 #간편하게 그래프를 만들고 변화를 줄 수 있음
 import matplotlib.pyplot as plt
+import plotly
 import plotly.graph_objects as go
 from datetime import datetime
 
@@ -31,21 +32,22 @@ company = '삼성전자'
 code = stock_code[stock_code.company == company].code.values[0].strip()
 
 #페이지 지정 (단수)
-# page = 1
-# url = 'https://finance.naver.com/item/sise_day.naver?code={code}'.format(code=code)
-# url = '{url}&page={page}'.format(url=url, page=page)
+page = 1
+url = 'https://finance.naver.com/item/sise_day.naver?code='+code + '&page={}'.format(page)
 #print(url)
-# #header를 user-agent 값
-# header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
-# res = requests.get(url, headers=header)
-# df = pd.read_html(res.text, header=0)[0]
+#header를 user-agent 값
+header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
+res = requests.get(url, headers=header)
+df = pd.read_html(res.text, header=0)[0]
 
+"""
 #페이지 지정 (복수)
 df = pd.DataFrame()
 for page in range(1, 20):
-    url = 'https://finance.naver.com/item/sise_day.naver?code={code}'.format(code=code)
-    url = '{url}&page={page}'.format(url=url, page=page)
+    url = 'https://finance.naver.com/item/sise_day.naver?code='+code + '&page={}'.format(page)
     print(url)
+    # df.append(pd.read_html(url), ignore_index=True)
+"""
 
 #결측값 제거
 df = df.dropna()
@@ -55,16 +57,28 @@ df = df.rename(columns= {'날짜': 'date', '종가': 'close', '전일비': 'diff
 df[['close', 'diff', 'open', 'high', 'low', 'volume']] = df[['close', 'diff', 'open', 'high', 'low', 'volume']].astype(int)
 # 컬럼명 'date'의 타입을 date로 바꿔줌
 df['date'] = pd.to_datetime(df['date'])
+
 #date을 기준으로 오름차순으로 변경
 df = df.sort_values(by=['date'], ascending=True)
+print(df)
 
+#그래프 만들기
 fig = go.Figure(data=[go.Candlestick(x=df['date'],
                 open=df['open'],
                 high=df['high'],
                 low=df['low'],
                 close=df['close'])])
+#레이아웃
+fig.update_layout(
+    title=company,
+    #가로
+    xaxis_title='Date',
+    #세로
+    yaxis_title='Close'
+)
 
 fig.show()
+
 
 """
 #그래프 설정
