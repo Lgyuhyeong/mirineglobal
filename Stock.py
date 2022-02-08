@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-#간편하게 그래프를 만들고 변화를 줄 수 있음
+from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
 import plotly
 import plotly.graph_objects as go
@@ -27,30 +27,40 @@ stock_code.code = stock_code.code.map('{:06d}'.format)
 
 
 #주식 일별 시세 url 가져오기
-company = '삼성전자'
+company = '네오티스'
 #앞뒤 공백제거
 code = stock_code[stock_code.company == company].code.values[0].strip()
-
+"""
 #페이지 지정 (단수)
 page = 1
 url = 'https://finance.naver.com/item/sise_day.naver?code='+code + '&page={}'.format(page)
 #print(url)
 #header를 user-agent 값
 header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
-res = requests.get(url, headers=header)
+req = requests.get(url, headers=header)
 df = pd.read_html(res.text, header=0)[0]
-
 """
+
 #페이지 지정 (복수)
 df = pd.DataFrame()
-for page in range(1, 20):
-    url = 'https://finance.naver.com/item/sise_day.naver?code='+code + '&page={}'.format(page)
-    print(url)
-    # df.append(pd.read_html(url), ignore_index=True)
-"""
+url = 'https://finance.naver.com/item/sise_day.naver?code='+code
+#header를 user-agent 값
+header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
+req = requests.get(url, headers=header)
+#첫 페이지를 파싱하여 전체 페이지 수 계산
+soup = BeautifulSoup(req.text, 'html.parser')
+last_page = int(soup.select_one('td.pgRR').a['href'].split('=')[-1])
+#모든 페이지 정보 데이터 프레임 생성
+for page in range(1, last_page + 1):
+    req = requests.get(f'{url}&page={page}', headers=header)
+    df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index= True)
 
 #결측값 제거
 df = df.dropna()
+#인덱스 재 배열
+df.reset_index(drop= True, inplace= True)
+# print(df)
+
 # 한글로 된 컬럼명을 영어로 바꿔줌
 df = df.rename(columns= {'날짜': 'date', '종가': 'close', '전일비': 'diff', '시가': 'open', '고가': 'high', '저가': 'low', '거래량': 'volume'})
 # 데이터의 타입을 int형으로 바꿔줌
@@ -60,9 +70,10 @@ df['date'] = pd.to_datetime(df['date'])
 
 #date을 기준으로 오름차순으로 변경
 df = df.sort_values(by=['date'], ascending=True)
-print(df)
+# print(df)
 
-#그래프 만들기
+
+#캔들 그래프 만들기
 fig = go.Figure(data=[go.Candlestick(x=df['date'],
                 open=df['open'],
                 high=df['high'],
@@ -70,25 +81,12 @@ fig = go.Figure(data=[go.Candlestick(x=df['date'],
                 close=df['close'])])
 #레이아웃
 fig.update_layout(
-    title=company,
+    title=company +"(종목코드 : "+ code +")",
     #가로
     xaxis_title='Date',
     #세로
     yaxis_title='Close'
 )
 
+
 fig.show()
-
-
-"""
-#그래프 설정
-plt.plot(df['date'], df['close'])
-#가로
-plt.xlabel('date', loc='right')
-#세로
-plt.ylabel('close', loc='top')
-#눈금 스타일 지정하기
-plt.grid(True)
-plt.tick_params(axis='x')
-plt.show()
-"""
