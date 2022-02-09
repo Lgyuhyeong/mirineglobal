@@ -1,11 +1,9 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
-import plotly
-import plotly.graph_objects as go
-from datetime import datetime
-
+import csv
+import plotly.graph_objects as go #캔들그래프
+import plotly.express as px #타임 그래프
 
 # naver https://finance.naver.com/item/sise_day.naver?code="종목코드"&page="페이지번호"
 
@@ -27,9 +25,10 @@ stock_code.code = stock_code.code.map('{:06d}'.format)
 
 
 #주식 일별 시세 url 가져오기
-company = '네오티스'
+company = 'LG화학'
 #앞뒤 공백제거
 code = stock_code[stock_code.company == company].code.values[0].strip()
+
 """
 #페이지 지정 (단수)
 page = 1
@@ -47,9 +46,15 @@ url = 'https://finance.naver.com/item/sise_day.naver?code='+code
 #header를 user-agent 값
 header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
 req = requests.get(url, headers=header)
-#첫 페이지를 파싱하여 전체 페이지 수 계산
 soup = BeautifulSoup(req.text, 'html.parser')
-last_page = int(soup.select_one('td.pgRR').a['href'].split('=')[-1])
+
+#첫 페이지를 파싱하여 전체 페이지 수 계산
+if (soup.select_one('td.pgRR')):
+    last_page = int(soup.select_one('td.pgRR').a['href'].split('=')[-1])
+else:
+    #신규 상장등 아직 페이지가 1이 안넘는 경우 (ex:LG에너지솔루션)
+    last_page = 1
+
 #모든 페이지 정보 데이터 프레임 생성
 for page in range(1, last_page + 1):
     req = requests.get(f'{url}&page={page}', headers=header)
@@ -72,7 +77,7 @@ df['date'] = pd.to_datetime(df['date'])
 df = df.sort_values(by=['date'], ascending=True)
 # print(df)
 
-
+"""
 #캔들 그래프 만들기
 fig = go.Figure(data=[go.Candlestick(x=df['date'],
                 open=df['open'],
@@ -87,6 +92,22 @@ fig.update_layout(
     #세로
     yaxis_title='Close'
 )
+"""
 
+#반응형 그래프
+fig = px.line(df, x='date', y='close', title= "{}의 종가".format(company))
+
+fig.update_xaxes(
+    rangeslider_visible=True,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=3, label="3m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=1, label="1y", step="year", stepmode="backward"),
+            dict(step="all")
+        ])
+    )
+)
 
 fig.show()
