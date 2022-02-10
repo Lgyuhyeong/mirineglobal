@@ -1,3 +1,5 @@
+from builtins import print
+
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -23,9 +25,8 @@ stock_code = stock_code.rename(columns={'회사명':'company', '종목코드':'c
 stock_code.code = stock_code.code.map('{:06d}'.format)
 #print(stock_code.head())
 
-
 #주식 일별 시세 url 가져오기
-company = 'LG화학'
+company = "LG화학"
 #앞뒤 공백제거
 code = stock_code[stock_code.company == company].code.values[0].strip()
 
@@ -34,7 +35,7 @@ code = stock_code[stock_code.company == company].code.values[0].strip()
 page = 1
 url = 'https://finance.naver.com/item/sise_day.naver?code='+code + '&page={}'.format(page)
 #print(url)
-#header를 user-agent 값
+#일별시세를 가져오기 위해선 header에 user-agent 값이 필요
 header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
 req = requests.get(url, headers=header)
 df = pd.read_html(res.text, header=0)[0]
@@ -43,7 +44,7 @@ df = pd.read_html(res.text, header=0)[0]
 #페이지 지정 (복수)
 df = pd.DataFrame()
 url = 'https://finance.naver.com/item/sise_day.naver?code='+code
-#header를 user-agent 값
+#일별시세를 가져오기 위해선 header에 user-agent 값이 필요
 header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
 req = requests.get(url, headers=header)
 soup = BeautifulSoup(req.text, 'html.parser')
@@ -75,7 +76,7 @@ df['date'] = pd.to_datetime(df['date'])
 
 #date을 기준으로 오름차순으로 변경
 df = df.sort_values(by=['date'], ascending=True)
-# print(df)
+# print(df['close'])
 
 """
 #캔들 그래프 만들기
@@ -94,18 +95,18 @@ fig.update_layout(
 )
 """
 
-#반응형 그래프
-fig = px.line(df, x='date', y='close', title= "{}의 종가".format(company))
-
+#반응형 그래프 가로는 날짜 세로는 종가
+fig = px.line(df, x='date', y='close', title= "{}({})의 종가".format(company, code))
+#시계열(범위 선택기 버튼)
 fig.update_xaxes(
     rangeslider_visible=True,
     rangeselector=dict(
         buttons=list([
-            dict(count=1, label="1m", step="month", stepmode="backward"),
-            dict(count=3, label="3m", step="month", stepmode="backward"),
-            dict(count=6, label="6m", step="month", stepmode="backward"),
-            dict(count=1, label="1y", step="year", stepmode="backward"),
-            dict(step="all")
+            dict(count=1, label="1m", step="month", stepmode="backward"),#1달
+            dict(count=3, label="3m", step="month", stepmode="backward"),#3달
+            dict(count=6, label="6m", step="month", stepmode="backward"),#6달
+            dict(count=1, label="1y", step="year", stepmode="backward"),#1년
+            dict(step="all")#전체
         ])
     )
 )
