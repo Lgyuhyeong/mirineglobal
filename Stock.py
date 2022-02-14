@@ -3,7 +3,7 @@ from builtins import print
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-import csv
+from datetime import datetime
 import plotly.graph_objects as go #캔들그래프
 import plotly.express as px #타임 그래프
 
@@ -30,6 +30,11 @@ company = "LG화학"
 #앞뒤 공백제거
 code = stock_code[stock_code.company == company].code.values[0].strip()
 
+#날짜지정
+today_date = datetime.today() #오늘날짜
+want_date = datetime.strptime('2021-05-05', '%Y-%m-%d')
+
+print(type(today_date))
 """
 #페이지 지정 (단수)
 page = 1
@@ -72,11 +77,18 @@ df = df.rename(columns= {'날짜': 'date', '종가': 'close', '전일비': 'diff
 # 데이터의 타입을 int형으로 바꿔줌
 df[['close', 'diff', 'open', 'high', 'low', 'volume']] = df[['close', 'diff', 'open', 'high', 'low', 'volume']].astype(int)
 # 컬럼명 'date'의 타입을 date로 바꿔줌
-df['date'] = pd.to_datetime(df['date'])
+df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
+
+#특정날짜에 해당하는 데이터 조회
+# want_date<=df['date']<=today_date
+print(df)
+
+#csv파일 저장
+df.to_csv(company+'.csv', encoding='utf-8')
 
 #date을 기준으로 오름차순으로 변경
 df = df.sort_values(by=['date'], ascending=True)
-# print(df['close'])
+print(df)
 
 """
 #캔들 그래프 만들기
@@ -94,6 +106,7 @@ fig.update_layout(
     yaxis_title='Close'
 )
 """
+
 
 #반응형 그래프 가로는 날짜 세로는 종가
 fig = px.line(df, x='date', y='close', title= "{}({})의 종가".format(company, code))
