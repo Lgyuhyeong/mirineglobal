@@ -5,4 +5,6 @@
 
 
 ### 출력결과
-
+![캔들형 그래프](https://github.com/Lgyuhyeong/mirineglobal/blob/master/%EC%BA%94%EB%93%A4%20%EA%B7%B8%EB%9E%98%ED%94%84%20%EC%98%88%EC%8B%9C.jpg)
+![반응형 그래프(1)]
+![반응형 그래프(2)]
