@@ -9,6 +9,6 @@
 #### 캔들그래프
 ![캔들형 그래프](https://github.com/Lgyuhyeong/mirineglobal/blob/master/%EC%82%AC%EC%A7%84%EC%9E%90%EB%A3%8C/%EC%BA%94%EB%93%A4%20%EA%B7%B8%EB%9E%98%ED%94%84%20%EC%98%88%EC%8B%9C.jpg)
 #### 반응형 그래프 (all)
-![반응형 그래프(1)](https://github.com/Lgyuhyeong/mirineglobal/blob/master/%EB%B0%98%EC%9D%91%ED%98%95%EA%B7%B8%EB%9E%98%ED%94%84(1).jpg)
+![반응형 그래프(1)](https://github.com/Lgyuhyeong/mirineglobal/blob/master/%EC%82%AC%EC%A7%84%EC%9E%90%EB%A3%8C/%EB%B0%98%EC%9D%91%ED%98%95%EA%B7%B8%EB%9E%98%ED%94%84(1).jpg)
 #### 반응형 그래프 (1달)
 ![반응형 그래프(2)](https://github.com/Lgyuhyeong/mirineglobal/blob/master/%EB%B0%98%EC%9D%91%ED%98%95%EA%B7%B8%EB%9E%98%ED%94%84(2).jpg)
