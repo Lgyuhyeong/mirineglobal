@@ -26,7 +26,7 @@ file_handler = logging.FileHandler(directory + '{date}.log'.format(date=date))
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
-
+#깃허브 에러는 왜;;
 """
 #로그 확인용
 for i in range(10):
