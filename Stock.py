@@ -1,5 +1,4 @@
 from builtins import print
-import loggingExam
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -23,18 +22,22 @@ stock_code = stock_code.rename(columns={'회사명':'company', '종목코드':'c
 
 #종목코드를 6자리로 고정
 stock_code.code = stock_code.code.map('{:06d}'.format)
-#print(stock_code.head())
+# print(stock_code.head())
 
 #주식 일별 시세 url 가져오기
-company = "LG화학"
+company = "LG에너지솔루션"
 #앞뒤 공백제거
 code = stock_code[stock_code.company == company].code.values[0].strip()
 
-#날짜지정
-today_date = datetime.today() #오늘날짜
-want_date = datetime.strptime('2021-05-05', '%Y-%m-%d')
+#날짜 지정
+def date_range(start, end):
+    start = datetime.strptime(start, '%Y-%m-%d')
+    end = datetime.strptime(end, '%Y-%m-%d')
+    dates = [(start).strptime('%Y-%m-%d') for i in range((end-start).days+1)]
+    return dates
 
-print(type(today_date))
+dates = date_range("2021-01-01", "2022-02-16")
+
 """
 #페이지 지정 (단수)
 page = 1
@@ -48,6 +51,9 @@ df = pd.read_html(res.text, header=0)[0]
 
 #페이지 지정 (복수)
 df = pd.DataFrame()
+df2 = pd.DataFrame()
+df3 = pd.DataFrame()
+
 url = 'https://finance.naver.com/item/sise_day.naver?code='+code
 #일별시세를 가져오기 위해선 header에 user-agent 값이 필요
 header = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
@@ -64,7 +70,9 @@ else:
 #모든 페이지 정보 데이터 프레임 생성
 for page in range(1, last_page + 1):
     req = requests.get(f'{url}&page={page}', headers=header)
-    df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index= True)
+    # df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index= True)
+    df2 = df['날짜'] == dates
+
 
 #결측값 제거
 df = df.dropna()
@@ -79,15 +87,12 @@ df[['close', 'diff', 'open', 'high', 'low', 'volume']] = df[['close', 'diff', 'o
 # 컬럼명 'date'의 타입을 date로 바꿔줌
 df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
 
-#특정날짜에 해당하는 데이터 조회
-# want_date<=df['date']<=today_date
-print(df)
-
 #csv파일 저장
 df.to_csv(company+'.csv', encoding='utf-8')
 
 #date을 기준으로 오름차순으로 변경
 df = df.sort_values(by=['date'], ascending=True)
+
 print(df)
 
 """
