@@ -3,7 +3,6 @@ import traceback
 import loggingExam
 from builtins import print
 import re
-import sys
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -32,12 +31,19 @@ def codeCheck(company):
     stock_code.code = stock_code.code.map('{:06d}'.format)
 
     msg_type = 'codeCheck error'
-    if company == stock_code.columns('company'):
-        msg = '존재하지않는 주식입니다.'
-        raise StockException(msg_type, msg)
+    print(stock_code[stock_code['company'].isin([company])]['company'].head().values)
+    # series 내의 데이터 분해 후 입력 회사값과 비교
+    try:
+        if not stock_code[stock_code['company'].isin([company])]:
+            msg = '존재하지않는 주식입니다.'
+            raise StockException(msg_type, msg)
+    except:
+        # 존재하기에 에러 발생
+        pass
 
     # 앞뒤 공백제거
-    code = stock_code[stock_code.company == company].code.values[0].strip()
+    # series 내의 code 값의 헤더와 비교
+    code = stock_code[stock_code['company'].isin([company])]['code'].head().values[0]
     print(code)
 
     return code
@@ -57,6 +63,9 @@ def dateCheck(str_startDate):
     if startDate.date() > nowDate.date():
         msg = "시작일이 미래입니다."
         raise StockException(msg_type, msg)
+
+    print(startDate)
+
     return startDate
 
 
@@ -72,8 +81,9 @@ def start():
         str_startDate = input("시작날짜 : ")
         print(company, str_startDate)
 
-        startDate = dateCheck(str_startDate)
         code = codeCheck(company)
+        startDate = dateCheck(str_startDate)
+
 
         url = 'https://finance.naver.com/item/sise_day.naver?code=' + code
         header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}

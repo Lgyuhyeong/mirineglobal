@@ -30,13 +30,13 @@ company = "LG에너지솔루션"
 code = stock_code[stock_code.company == company].code.values[0].strip()
 
 #날짜 지정
-def date_range(start, end):
-    start = datetime.strptime(start, '%Y-%m-%d')
-    end = datetime.strptime(end, '%Y-%m-%d')
-    dates = [(start).strptime('%Y-%m-%d') for i in range((end-start).days+1)]
-    return dates
+# def date_range(start, end):
+#     start = datetime.strptime(start, '%Y-%m-%d')
+#     end = datetime.strptime(end, '%Y-%m-%d')
+#     dates = [(start).strptime('%Y-%m-%d') for i in range((end-start).days+1)]
+#     return dates
+# dates = date_range("2021-01-01", "2022-02-16")
 
-dates = date_range("2021-01-01", "2022-02-16")
 
 """
 #페이지 지정 (단수)
@@ -51,8 +51,6 @@ df = pd.read_html(res.text, header=0)[0]
 
 #페이지 지정 (복수)
 df = pd.DataFrame()
-df2 = pd.DataFrame()
-df3 = pd.DataFrame()
 
 url = 'https://finance.naver.com/item/sise_day.naver?code='+code
 #일별시세를 가져오기 위해선 header에 user-agent 값이 필요
@@ -70,8 +68,9 @@ else:
 #모든 페이지 정보 데이터 프레임 생성
 for page in range(1, last_page + 1):
     req = requests.get(f'{url}&page={page}', headers=header)
-    # df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index= True)
-    df2 = df['날짜'] == dates
+    df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index= True)
+
+
 
 
 #결측값 제거
