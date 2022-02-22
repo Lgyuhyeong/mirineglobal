@@ -31,7 +31,8 @@ def codeCheck(company):
     stock_code.code = stock_code.code.map('{:06d}'.format)
 
     msg_type = 'codeCheck error'
-    print(stock_code[stock_code['company'].isin([company])]['company'].head().values)
+    # print(stock_code[stock_code['company'].isin([company])]['company'].head().values)
+
     # series 내의 데이터 분해 후 입력 회사값과 비교
     try:
         if not stock_code[stock_code['company'].isin([company])]:
@@ -44,6 +45,7 @@ def codeCheck(company):
     # 앞뒤 공백제거
     # series 내의 code 값의 헤더와 비교
     code = stock_code[stock_code['company'].isin([company])]['code'].head().values[0]
+    #코드 확인
     print(code)
 
     return code
@@ -104,6 +106,25 @@ def start():
             req = requests.get(f'{url}&page={page}', headers=header)
             df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index=True)
 
+        # 결측값 제거
+        df = df.dropna()
+        # 인덱스 재 배열
+        df.reset_index(drop=True, inplace=True)
+        # print(df)
+
+        # 한글로 된 컬럼명을 영어로 바꿔줌
+        df = df.rename(columns={'날짜': 'date', '종가': 'close', '전일비': 'diff', '시가': 'open', '고가': 'high', '저가': 'low',
+                                '거래량': 'volume'})
+        # 데이터의 타입을 int형으로 바꿔줌
+        df[['close', 'diff', 'open', 'high', 'low', 'volume']] = df[
+            ['close', 'diff', 'open', 'high', 'low', 'volume']].astype(int)
+        # 컬럼명 'date'의 타입을 date로 바꿔줌
+        df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
+        # date을 기준으로 오름차순으로 변경
+        df = df.sort_values(by=['date'], ascending=True)
+
+        print(df)
+        
     except StockException as se:
         logger.error(se)
 
