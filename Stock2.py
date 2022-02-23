@@ -53,19 +53,24 @@ def codeCheck(company):
 #날짜 체크
 def dateCheck(str_startDate):
     logger.info('(startDate={})'.format(str_startDate))
-    startDate_reg = re.compile(r'([12]\d{3})-(0\d|1[0-2])-([0-2]\d|3[01])$')
+    startDate_reg = re.compile(r'([12]\d{3}).(0\d|1[0-2]).([0-2]\d|3[01])$')
     msg_type = 'dateCheck error'
-
     if not startDate_reg.match(str_startDate):
         msg = "시작일을 확인해 주세요."
         raise StockException(msg_type, msg)
 
-    startDate = datetime.strptime(str_startDate, '%Y-%m-%d')
+    # year : data[0], month : data[1], day : data[2]
+    data = str_startDate.split('.')
+
+    startDate = datetime(int(data[0]), int(data[1]), int(data[2]))
+    startDate.strftime("%Y.%m.%d")
     nowDate = datetime.today()
+
     if startDate.date() > nowDate.date():
         msg = "시작일이 미래입니다."
         raise StockException(msg_type, msg)
 
+    print('시작날짜')
     print(startDate)
 
     return startDate
@@ -86,13 +91,12 @@ def start():
         code = codeCheck(company)
         startDate = dateCheck(str_startDate)
 
-
         url = 'https://finance.naver.com/item/sise_day.naver?code=' + code
         header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}
         req = requests.get(url, headers=header)
         soup = BeautifulSoup(req.text, 'html.parser')
         # 페이지 지정 (복수)
-        df = pd.DataFrame()
+        df = pd.DataFrame(columns=['날짜', '종가', '전일비', '시가', '고가', '저가', '거래량'])
 
         # 첫 페이지를 파싱하여 전체 페이지 수 계산
         if soup.select_one('td.pgRR'):
@@ -104,7 +108,12 @@ def start():
         # 모든 페이지 정보 데이터 프레임 생성
         for page in range(1, last_page + 1):
             req = requests.get(f'{url}&page={page}', headers=header)
-            df = pd.concat([df, pd.read_html(req.text, encoding='euc-kr')[0]], ignore_index=True)
+            page_data = pd.read_html(req.text, encoding='euc-kr')
+            df = pd.concat([df, page_data[0]], ignore_index=True)
+            # 페이지 데이터 가져오는 부분
+            df = df.dropna()
+            if False in list(df['날짜'] > str_startDate):         # [True, True, True ````]
+                break
 
         # 결측값 제거
         df = df.dropna()
@@ -116,15 +125,15 @@ def start():
         df = df.rename(columns={'날짜': 'date', '종가': 'close', '전일비': 'diff', '시가': 'open', '고가': 'high', '저가': 'low',
                                 '거래량': 'volume'})
         # 데이터의 타입을 int형으로 바꿔줌
-        df[['close', 'diff', 'open', 'high', 'low', 'volume']] = df[
-            ['close', 'diff', 'open', 'high', 'low', 'volume']].astype(int)
+        df[['close', 'diff', 'open', 'high', 'low', 'volume']] = df[['close', 'diff', 'open', 'high', 'low', 'volume']].astype(int)
         # 컬럼명 'date'의 타입을 date로 바꿔줌
         df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d')
         # date을 기준으로 오름차순으로 변경
         df = df.sort_values(by=['date'], ascending=True)
 
+        df = df[df['date'] >= str_startDate]
+
         print(df)
-        
     except StockException as se:
         logger.error(se)
 
