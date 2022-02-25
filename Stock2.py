@@ -50,6 +50,26 @@ def codeCheck(company):
 
     return code
 
+def stockGrape (df, company, code):
+    # 반응형 그래프 가로는 날짜 세로는 종가
+    fig = px.line(df, x='date', y='close', title="{}({})의 종가".format(company, code))
+    # 시계열(범위 선택기 버튼)
+    fig.update_xaxes(
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1m", step="month", stepmode="backward"),  # 1달
+                dict(count=3, label="3m", step="month", stepmode="backward"),  # 3달
+                dict(count=6, label="6m", step="month", stepmode="backward"),  # 6달
+                dict(count=1, label="1y", step="year", stepmode="backward"),  # 1년
+                dict(step="all")  # 전체
+            ])
+        )
+    )
+
+    fig.show()
+
+
 #날짜 체크
 def dateCheck(str_startDate):
     logger.info('(startDate={})'.format(str_startDate))
@@ -132,8 +152,10 @@ def start():
         df = df.sort_values(by=['date'], ascending=True)
 
         df = df[df['date'] >= str_startDate]
-
         print(df)
+
+        stockGrape(df, company, code)
+
     except StockException as se:
         logger.error(se)
 

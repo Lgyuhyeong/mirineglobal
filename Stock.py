@@ -92,6 +92,7 @@ df.to_csv(company+'.csv', encoding='utf-8')
 #date을 기준으로 오름차순으로 변경
 df = df.sort_values(by=['date'], ascending=True)
 
+
 print(df)
 
 """
