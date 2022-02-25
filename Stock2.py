@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from StockException import StockException
 import plotly.graph_objects as go #캔들그래프
-import plotly.express as px #타임 그래프
+import plotly.express as px #반응형 그래프
 
 class Contact:
     def __init__(self, company, str_startDate):
@@ -22,6 +22,7 @@ class Contact:
 
 #코드 체크
 def codeCheck(company):
+    logger.info('codeCheck')
     stock_code = pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download', header=0)[0]
     # 회사명과 종목코드만을 사용하기 위해서 나머지는 제외
     stock_code = stock_code[['회사명', '종목코드']]
@@ -50,6 +51,27 @@ def codeCheck(company):
 
     return code
 
+#캔들 그래프
+def candleGrape (df, company, code):
+    # 캔들 그래프 만들기
+    fig = go.Figure(data=[go.Candlestick(x=df['date'],
+                                         open=df['open'],
+                                         high=df['high'],
+                                         low=df['low'],
+                                         close=df['close'])])
+    # 레이아웃
+    fig.update_layout(
+        title=company + "(종목코드 : " + code + ")",
+        # 가로
+        xaxis_title='Date',
+        # 세로
+        yaxis_title='Close'
+    )
+
+    fig.show()
+
+
+#반응형 그래프
 def stockGrape (df, company, code):
     # 반응형 그래프 가로는 날짜 세로는 종가
     fig = px.line(df, x='date', y='close', title="{}({})의 종가".format(company, code))
@@ -154,7 +176,13 @@ def start():
         df = df[df['date'] >= str_startDate]
         print(df)
 
+        # csv파일 저장
+        df.to_csv(company + '.csv', encoding='utf-8')
+
+        #반응형그래프
         stockGrape(df, company, code)
+        #캔들그래프
+        candleGrape(df, company, code)
 
     except StockException as se:
         logger.error(se)
