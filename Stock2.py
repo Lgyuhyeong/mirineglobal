@@ -1,5 +1,3 @@
-import traceback
-
 import loggingExam
 from builtins import print
 import re

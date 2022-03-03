@@ -1,4 +1,4 @@
-version: '3' # 최신버전 사용
+version: '3'
 services:
   python3:
     restart: always
@@ -7,4 +7,4 @@ services:
     working_dir: '/Pyexam2'
     tty: true
     volumes:
-      - ./PythonClass/Pyexam2
+      - /PythonClass/Pyexam2
