@@ -1,10 +1,10 @@
 version: '3'
 services:
-  python3:
+  python3.10:
     restart: always
     build: .
-    container_name: 'python3'
+    container_name: 'python3.10.2'
     working_dir: '/Pyexam2'
     tty: true
     volumes:
-      - /PythonClass/Pyexam2
+      - ./logs:/Pyexam2/logs
