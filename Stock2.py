@@ -1,11 +1,15 @@
+import plotly.offline
+
 import loggingExam
+from StockException import StockException
+
 from builtins import print
 import re
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
-from StockException import StockException
+import kaleido
 import plotly.graph_objects as go #캔들그래프
 import plotly.express as px #반응형 그래프
 
@@ -59,20 +63,21 @@ def candleGrape (df, company, code):
                                          close=df['close'])])
     # 레이아웃
     fig.update_layout(
-        title=company + "(종목코드 : " + code + ")",
+        title=company + "(CODE : " + code + ")",
         # 가로
         xaxis_title='Date',
         # 세로
         yaxis_title='Close'
     )
 
-    fig.show()
-
+    #fig.show()
+    # plotly.offline.plot(fig)
+    fig.write_image('candle_grape.png')
 
 #반응형 그래프
 def stockGrape (df, company, code):
     # 반응형 그래프 가로는 날짜 세로는 종가
-    fig = px.line(df, x='date', y='close', title="{}({})의 종가".format(company, code))
+    fig = px.line(df, x='date', y='close', title="{}({}) close".format(company, code))
     # 시계열(범위 선택기 버튼)
     fig.update_xaxes(
         rangeslider_visible=True,
@@ -87,8 +92,9 @@ def stockGrape (df, company, code):
         )
     )
 
-    fig.show()
+    #fig.show()
 
+    fig.write_image('interactive_grape.png')
 
 #날짜 체크
 def dateCheck(str_startDate):

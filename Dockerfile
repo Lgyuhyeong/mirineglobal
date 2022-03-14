@@ -13,7 +13,12 @@ COPY requirements.txt /Pyexam2
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y
+#글자깨짐 방지
+RUN apt-get -y install locales && \
+    localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
 
+
+RUN pip install kaleido
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 RUN pip install -r requirements.txt
