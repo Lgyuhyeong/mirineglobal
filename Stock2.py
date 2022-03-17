@@ -13,6 +13,10 @@ import kaleido
 import plotly.graph_objects as go #캔들그래프
 import plotly.express as px #반응형 그래프
 
+from elasticsearch import Elasticsearch
+
+
+
 class Contact:
     def __init__(self, company, str_startDate):
         self.company = company
